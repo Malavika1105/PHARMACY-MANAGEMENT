@@ -28,7 +28,7 @@ PHARMACY-MANAGEMENT/
 ├── test_id_logic.py
 ├── relational_schema_diagram.png
 ├── ref.png
-└── Detailed_Project_Report.tex
+
 ```
 
 ## Prerequisites
