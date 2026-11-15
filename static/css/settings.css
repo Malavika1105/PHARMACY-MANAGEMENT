@@ -1,0 +1,147 @@
+/* Integrated Settings & Profile Styles */
+
+.settings-section-integrated {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    padding: 40px;
+    border-radius: 35px;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    margin-bottom: 40px;
+}
+
+.group-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    color: var(--primary-dark);
+}
+
+.group-header i { font-size: 20px; }
+.group-header h4 { font-size: 18px; font-weight: 700; }
+
+.settings-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.settings-inputs .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.settings-inputs .form-group input {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 15px;
+    border: 1px solid rgba(165, 139, 139, 0.2);
+    background: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+    outline: none;
+    transition: 0.3s;
+}
+
+.settings-inputs .form-group input:focus {
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 4px 12px rgba(165, 139, 139, 0.1);
+}
+
+.btn-primary-aesthetic {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 16px 35px;
+    border-radius: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 8px 20px rgba(165, 139, 139, 0.2);
+}
+
+.btn-primary-aesthetic:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(165, 139, 139, 0.3);
+}
+
+/* Authentication / Modal Header Styles */
+.auth-nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+}
+
+.back-home-btn {
+    text-decoration: none;
+    background: white;
+    color: var(--text-main);
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid rgba(165, 139, 139, 0.1);
+}
+
+.back-home-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateX(-5px);
+    box-shadow: 0 8px 20px rgba(165, 139, 139, 0.2);
+}
+
+/* Nav Branding Styles */
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+.nav-logo i { color: var(--primary); font-size: 24px; }
+.nav-logo .brand-logotype {
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    letter-spacing: -0.5px;
+}
+.nav-logo .brand-logotype .med { color: var(--text-main); font-weight: 800; }
+.nav-logo .brand-logotype .care { color: var(--text-muted); font-weight: 300; }
+.nav-logo .brand-logotype .pro-badge {
+    background: var(--primary);
+    color: white;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-left: 4px;
+}
+
+.back-home {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
+}
+.back-home:hover { color: var(--primary); }

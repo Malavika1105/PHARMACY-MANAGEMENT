@@ -1,0 +1,240 @@
+/* Professional Glassmorphism Box - Solid BG - MedCare Pro */
+
+:root {
+    --primary: #8C7373; /* Deep Mauve to match dashboard theme */
+    --primary-light: rgba(140, 115, 115, 0.15);
+    --primary-dark: #6D5B5B;
+    --text-main: #2D3436; /* Very dark charcoal for excellent readability */
+    --text-muted: #555555;
+    --glass-bg: rgba(255, 255, 255, 0.6); /* Slightly more opaque for better text backing */
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --shadow-main: 0 20px 50px rgba(140, 115, 115, 0.15);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: url("../image/bg2.png") no-repeat center center fixed;
+    background-size: cover;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Background overlay to help readability without hiding the image */
+body::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255, 255, 255, 0.1); 
+    z-index: 0;
+}
+
+.login-wrapper {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 440px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(25px) saturate(120%);
+    -webkit-backdrop-filter: blur(25px) saturate(120%);
+    padding: 45px;
+    border-radius: 35px;
+    box-shadow: var(--shadow-main);
+    border: 1px solid var(--glass-border);
+    position: relative;
+}
+
+.login-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 35px;
+}
+
+.login-brand i {
+    color: var(--primary); /* Matched to theme */
+    font-size: 26px;
+}
+
+.login-brand span {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.login-header h1 {
+    font-size: 28px;
+    color: var(--text-main);
+    margin-bottom: 10px;
+}
+
+.login-header p {
+    color: var(--text-muted);
+    font-size: 15px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 10px;
+    padding-left: 5px;
+}
+
+.input-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon-wrapper i {
+    position: absolute;
+    left: 18px;
+    color: var(--text-muted);
+    font-size: 16px;
+}
+
+.input-icon-wrapper input {
+    width: 100%;
+    padding: 14px 18px 14px 50px;
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    font-size: 15px;
+    background: rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+    outline: none;
+    color: var(--text-main);
+}
+
+.input-icon-wrapper input:focus {
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 0 0 5px rgba(165, 139, 139, 0.1);
+}
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    margin-top: -5px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.forgot-password {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-submit {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 18px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin-top: 15px;
+    box-shadow: 0 10px 25px rgba(140, 115, 115, 0.3);
+    letter-spacing: 0.5px;
+}
+
+.login-submit:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(140, 115, 115, 0.4);
+    filter: brightness(1.1);
+}
+
+.login-footer {
+    margin-top: 35px;
+    text-align: center;
+    font-size: 15px;
+    color: var(--text-muted);
+}
+
+.login-footer a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+/* Auth Nav specifically for Login/Register */
+.auth-nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    padding: 30px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+}
+
+.back-home-btn {
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    color: var(--text-main);
+    padding: 12px 24px;
+    border-radius: 15px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 0.3s;
+    border: 1px solid var(--glass-border);
+}
+
+.back-home-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateX(-5px);
+}
+
+@media (max-width: 480px) {
+    .login-container {
+        padding: 35px 25px;
+        border-radius: 25px;
+    }
+    .auth-nav { padding: 20px; }
+}

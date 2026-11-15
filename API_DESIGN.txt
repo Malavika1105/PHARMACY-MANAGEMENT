@@ -1,0 +1,54 @@
+MEDCARE PRO - PHARMACY MANAGEMENT SYSTEM
+API DESIGN DOCUMENTATION
+
+1. AUTHENTICATION MODULE
+--------------------------------------------------
+GET  /                          - Home/Landing page
+GET  /register                  - View registration page
+POST /register                  - Register a new user (Form: username, email, password)
+GET  /login                     - View login page
+POST /login                     - Authenticate user (Form: username, password)
+GET  /forgot_password           - View password reset page
+POST /forgot_password           - Reset user password (Form: username, email, new_password)
+GET  /logout                    - End user session and redirect to login
+
+2. DASHBOARD & SETTINGS
+--------------------------------------------------
+GET  /dashboard                 - Main overview with stats and low stock alerts
+GET  /settings                  - View user profile and system preferences
+POST /settings                  - Update profile, password, or low stock threshold
+GET  /contact                   - View contact information
+
+3. MEDICINE INVENTORY MODULE
+--------------------------------------------------
+GET  /medicine                  - List all medicine batches and stock levels
+POST /add_medicine              - Add a new medicine batch (Form: name, batch, category, prices, dates)
+POST /update_medicine/<id>      - Update details for a specific batch
+GET  /delete_medicine/<id>      - Remove a specific batch from inventory
+GET  /get_medicine_details/<name> - AJAX: Fetch pre-existing details for a medicine name (JSON)
+
+4. PURCHASE & RESTOCK MODULE
+--------------------------------------------------
+GET  /purchase                  - View purchase history and items needing restock
+POST /add_purchase              - Record a new stock purchase from a supplier
+
+5. SALES & BILLING MODULE
+--------------------------------------------------
+GET  /billing                   - Point of Sale (POS) interface to search items and build cart
+POST /process_sale              - Complete transaction, update stock, and generate invoice
+GET  /clear_sales               - Clear all recent sales history
+
+6. EXPIRY TRACKING MODULE
+--------------------------------------------------
+GET  /expiry                    - Track medicines by days left until expiration
+
+7. SUPPLIER MANAGEMENT MODULE
+--------------------------------------------------
+GET  /supplier                  - List all registered suppliers
+POST /add_supplier              - Add a new supplier and their authorized medicines
+POST /update_supplier/<id>      - Update supplier contact info or medicine list
+GET  /delete_supplier/<id>      - Remove a supplier from the database
+
+8. REPORTS MODULE
+--------------------------------------------------
+GET  /reports                   - Sales summaries, daily performance, and top-selling items

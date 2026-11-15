@@ -1,0 +1,206 @@
+/* Premium Simplified SaaS Glassmorphism Theme - MedCare Pro */
+
+:root {
+    --primary-red: #E60023;
+    --text-charcoal: #111827; 
+    --text-muted: #4B5563;
+    --white: #ffffff;
+    --glass-bg: rgba(255, 255, 255, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --accent-mauve: #A58B8B;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: var(--text-charcoal);
+    background-color: #F9E4E4;
+    overflow-x: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* BACKGROUND WRAPPER */
+.bg-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.bg-image {
+    width: 100%;
+    height: 100%;
+    background: url("../image/bg2.png") no-repeat center center/cover;
+    filter: brightness(0.9);
+}
+
+/* GLASS NAVBAR */
+.glass-navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 90px;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.nav-container {
+    max-width: 1400px;
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dot {
+    width: 14px;
+    height: 14px;
+    background-color: var(--primary-red);
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(230, 0, 35, 0.4);
+}
+
+.brand-logotype {
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    letter-spacing: -0.5px;
+    color: var(--text-charcoal);
+}
+
+.brand-logotype .med { font-weight: 800; }
+.brand-logotype .care { font-weight: 300; color: var(--text-muted); }
+.brand-logotype .pro-badge {
+    background: var(--primary-red);
+    color: white;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-left: 6px;
+    box-shadow: 0 4px 10px rgba(230, 0, 35, 0.2);
+}
+
+/* NAVBAR BUTTONS */
+.nav-auth {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.pill-btn {
+    text-decoration: none;
+    padding: 10px 30px;
+    border-radius: 40px;
+    font-weight: 700;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.login-pill {
+    background: var(--text-charcoal);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.login-pill:hover {
+    background: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.register-pill {
+    background: var(--text-charcoal);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.register-pill:hover {
+    background: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* HERO SECTION */
+.main-hero {
+    height: 100vh;
+    display: flex;
+    width: 100%;
+}
+
+/* FROSTED GLASS PANEL */
+.frosted-panel {
+    width: 50%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(25px) saturate(150%);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    padding: 0 8%;
+}
+
+.hero-content {
+    max-width: 580px;
+}
+
+.bold-headline {
+    font-size: 80px;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -3px;
+    color: var(--text-charcoal);
+    margin-top: 60px; /* Headline moved downwards */
+    margin-bottom: 25px;
+}
+
+.hero-subtext {
+    font-size: 18px;
+    color: var(--white); /* Changed to white */
+    line-height: 1.6;
+    margin-bottom: 40px;
+}
+
+/* HERO VISUAL (RIGHT SIDE) */
+.hero-visual {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1400px) {
+    .bold-headline { font-size: 64px; }
+}
+
+@media (max-width: 1024px) {
+    .frosted-panel { width: 100%; border-right: none; }
+    .hero-visual { display: none; }
+}
+
+@media (max-width: 768px) {
+    .bold-headline { font-size: 48px; letter-spacing: -1px; }
+    .hero-content { padding-top: 100px; }
+}

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings - MedCare Pro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .btn-back-aesthetic {
+            background: white;
+            border: 1px solid var(--glass-border);
+            padding: 8px 15px;
+            border-radius: 12px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .btn-back-aesthetic:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateX(-3px);
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+    <div class="dashboard-wrapper">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-house-medical"></i>
+                <div class="brand-logotype">
+                    <span class="med">Med</span><span class="care">Care</span><span class="pro-badge">Pro</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Overview</a>
+                <a href="{{ url_for('medicine') }}" class="nav-item"><i class="fa-solid fa-capsules"></i> Inventory</a>
+                <a href="{{ url_for('purchase') }}" class="nav-item"><i class="fa-solid fa-cart-plus"></i> Purchases {% if low_stock_count > 0 %}<span class="sidebar-badge" style="background: #e03131;">{{ low_stock_count }}</span>{% endif %}</a>
+                <a href="{{ url_for('expiry') }}" class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> Expiry Alerts {% if alert_count > 0 %}<span class="sidebar-badge">{{ alert_count }}</span>{% endif %}</a>
+                <a href="{{ url_for('billing') }}" class="nav-item"><i class="fa-solid fa-receipt"></i> Billing</a>
+                <a href="{{ url_for('supplier') }}" class="nav-item"><i class="fa-solid fa-truck-fast"></i> Suppliers</a>
+                <a href="{{ url_for('reports') }}" class="nav-item"><i class="fa-solid fa-chart-line"></i> Reports</a>
+                <a href="{{ url_for('contact') }}" class="nav-item"><i class="fa-solid fa-envelope"></i> Contact Us</a>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content" id="main-content">
+            <header class="top-bar">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="sidebar-toggle" id="toggle-sidebar">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn-back-aesthetic"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+                </div>
+                <div class="header-title">
+                    <h1>Account Settings</h1>
+                    <p>Manage your profile security and system preferences</p>
+                </div>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" style="padding: 15px; border-radius: 15px; margin-bottom: 20px; font-weight: 600; {% if category == 'success' %} background: #dcfce7; color: #15803d; {% else %} background: #fee2e2; color: #b91c1c; {% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <section class="settings-section-integrated" style="max-width: 900px;">
+                <form action="{{ url_for('settings') }}" method="POST" enctype="multipart/form-data">
+                    <div class="settings-group">
+                        <div class="group-header">
+                            <i class="fa-solid fa-user-circle"></i>
+                            <h4>Profile Picture</h4>
+                        </div>
+                        <div class="settings-inputs" style="display: flex; align-items: center; gap: 25px;">
+                            <div class="profile-preview" style="width: 100px; height: 100px; border-radius: 50%; overflow: hidden; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                <img id="avatar-preview" src="{{ url_for('static', filename='uploads/profile_pics/' + current_user.PROFILE_PIC) if current_user and current_user.PROFILE_PIC else 'https://ui-avatars.com/api/?name=' + username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <div class="file-upload">
+                                <label for="profile_pic" class="btn-primary-aesthetic" style="cursor: pointer; display: inline-block; padding: 10px 20px;">
+                                    <i class="fa-solid fa-camera"></i> Change Photo
+                                </label>
+                                <input type="file" name="profile_pic" id="profile_pic" hidden onchange="previewImage(this)">
+                                <p style="font-size: 11px; color: var(--text-light); margin-top: 8px;">Recommended: Square JPG or PNG</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="group-header">
+                            <i class="fa-solid fa-user-gear"></i>
+                            <h4>Profile Information</h4>
+                        </div>
+                        <div class="settings-inputs">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" name="full_name" value="{{ user.USERNAME if user else username }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email Address</label>
+                                <input type="email" name="email" value="{{ user.EMAIL if user else '' }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="group-header">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <h4>Security & Password</h4>
+                        </div>
+                        <div class="settings-inputs">
+                            <div class="form-group">
+                                <label>New Password (Optional)</label>
+                                <input type="password" name="new_password" placeholder="Leave blank to keep current">
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm Password</label>
+                                <input type="password" name="confirm_password" placeholder="Confirm new password">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="group-header">
+                            <i class="fa-solid fa-sliders"></i>
+                            <h4>System Preferences</h4>
+                        </div>
+                        <div class="settings-inputs">
+                            <div class="form-group">
+                                <label>Low Stock Threshold</label>
+                                <input type="number" name="low_stock_threshold" value="{{ low_stock_threshold }}" min="1" required>
+                                <p style="font-size: 11px; color: var(--text-light); margin-top: 8px;">Units below this number will trigger a low stock alert.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-actions">
+                        <button type="submit" class="btn-primary-aesthetic">Save All Changes</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const toggleBtn = document.getElementById('toggle-sidebar');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatar-preview').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+</body>
+</html>

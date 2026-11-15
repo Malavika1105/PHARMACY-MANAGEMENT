@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing System - MedCare Pro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/medicine.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/billing.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .btn-back-aesthetic {
+            background: white;
+            border: 1px solid var(--glass-border);
+            padding: 8px 15px;
+            border-radius: 12px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .logout-full-btn {
+            background: #e03131;
+            color: white !important;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            font-weight: 700;
+            display: block;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+        .logout-full-btn:hover {
+            background: #c92a2a;
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+    <div class="dashboard-wrapper">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-house-medical"></i>
+                <div class="brand-logotype">
+                    <span class="med">Med</span><span class="care">Care</span><span class="pro-badge">Pro</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-item"><i class="fa-solid fa-chart-line"></i> Overview</a>
+                <a href="{{ url_for('medicine') }}" class="nav-item"><i class="fa-solid fa-pills"></i> Inventory</a>
+                <a href="{{ url_for('purchase') }}" class="nav-item"><i class="fa-solid fa-cart-plus"></i> Purchases {% if low_stock_count > 0 %}<span class="sidebar-badge" style="background: #e03131;">{{ low_stock_count }}</span>{% endif %}</a>
+                <a href="{{ url_for('expiry') }}" class="nav-item"><i class="fa-solid fa-calendar-xmark"></i> Expiry Alerts {% if alert_count > 0 %}<span class="sidebar-badge">{{ alert_count }}</span>{% endif %}</a>
+                <a href="{{ url_for('billing') }}" class="nav-item active"><i class="fa-solid fa-file-invoice-dollar"></i> Sales & Billing</a>
+                <a href="{{ url_for('supplier') }}" class="nav-item"><i class="fa-solid fa-users"></i> Suppliers</a>
+                <a href="{{ url_for('reports') }}" class="nav-item"><i class="fa-solid fa-chart-line"></i> Reports</a>
+                <a href="{{ url_for('settings') }}" class="nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
+                <a href="{{ url_for('contact') }}" class="nav-item"><i class="fa-solid fa-envelope"></i> Contact Us</a>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content" id="main-content">
+            <header class="top-bar">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="sidebar-toggle" id="toggle-sidebar">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn-back-aesthetic"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+                </div>
+                <div class="header-title">
+                    <h1>Sales & Billing</h1>
+                    <p>Process orders and generate digital invoices</p>
+                </div>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" style="padding: 15px; border-radius: 15px; margin-bottom: 20px; font-weight: 600; {% if category == 'success' %} background: #dcfce7; color: #15803d; {% else %} background: #fee2e2; color: #b91c1c; {% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="billing-grid">
+                <!-- Billing Form -->
+                <div class="bill-card">
+                    <div class="form-section-title"><i class="fa-solid fa-cart-plus"></i> New Transaction</div>
+                    
+                    <div class="customer-info" style="margin-bottom: 25px;">
+                        <div class="form-group">
+                            <label>Customer Name</label>
+                            <input type="text" id="cust-name" placeholder="Enter Customer Name" required style="width: 100%; padding: 14px; border-radius: 15px; border: 1px solid #ddd; outline: none;">
+                        </div>
+                    </div>
+
+                    <div class="item-selector" style="display: grid; grid-template-columns: 1fr 120px 150px; gap: 15px; background: rgba(165, 139, 139, 0.05); padding: 20px; border-radius: 20px; border: 1px solid rgba(165, 139, 139, 0.1); margin-bottom: 25px;">
+                        <div class="form-group">
+                            <label>Search Medicine</label>
+                            <input type="text" id="med-search-input" list="med-search-list" placeholder="Type name, ID or batch..." style="width: 100%; padding: 14px; border-radius: 15px; border: 1px solid #ddd; outline: none;">
+                            <datalist id="med-search-list">
+                                {% for med in medicines %}
+                                <option value="{{ med.MEDICINE_NAME }}" data-id="{{ med.id }}" data-price="{{ med.PRICE }}" data-stock="{{ med.STOCK_QUANTITY }}" data-batch="{{ med.BATCH_NO }}">
+                                    Batch: {{ med.BATCH_NO }} | ID: {{ med.id }}
+                                </option>
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                        <div class="form-group">
+                            <label>Qty</label>
+                            <input type="number" id="sale-qty" value="1" min="1" style="width: 100%; padding: 14px; border-radius: 15px; border: 1px solid #ddd;">
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: flex-end;">
+                            <button type="button" onclick="addToCart()" class="btn-primary-aesthetic" style="width: 100%; padding: 14px;">Add to Cart</button>
+                        </div>
+                    </div>
+
+                    <!-- Cart Table -->
+                    <div class="cart-container">
+                        <table class="modern-table" id="cart-table">
+                            <thead>
+                                <tr>
+                                    <th>Medicine</th>
+                                    <th>Price</th>
+                                    <th>Qty</th>
+                                    <th>Total</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Items injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="total-display">
+                        <p>Grand Total</p>
+                        <h2 id="grand-total">₹0.00</h2>
+                    </div>
+
+                    <form action="{{ url_for('process_sale') }}" method="POST" id="final-checkout-form">
+                        <input type="hidden" name="customer_name" id="hidden-cust-name">
+                        <input type="hidden" name="cart_json" id="hidden-cart-data">
+                        <button type="button" onclick="checkout()" class="btn-submit" style="margin-top: 30px; width: 100%; padding: 18px; font-size: 18px;">
+                            <i class="fa-solid fa-check-double"></i> Complete Transaction
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Sales History -->
+                <div class="history-card">
+                    <div class="form-section-title" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span><i class="fa-solid fa-clock-rotate-left"></i> Recent Sales</span>
+                        <a href="{{ url_for('clear_sales') }}" onclick="return confirm('Are you sure you want to clear all sales history?')" style="font-size: 11px; color: #fa5252; text-decoration: none; font-weight: 600; padding: 5px 10px; border: 1px solid #fa5252; border-radius: 8px; transition: 0.3s;">
+                            Clear History
+                        </a>
+                    </div>
+                    <div class="history-list">
+                        {% for sale in recent_sales %}
+                        <div class="history-item">
+                            <div style="display: flex; justify-content: space-between;">
+                                <h5>{{ sale.MEDICINE_NAME }}</h5>
+                                <span class="price-tag">₹{{ sale.TOTAL_PRICE }}</span>
+                            </div>
+                            <p><i class="fa-solid fa-user"></i> {{ sale.CUSTOMER_NAME }} | Qty: {{ sale.QUANTITY }}</p>
+                            <p style="font-size: 10px; opacity: 0.7;"><i class="fa-solid fa-receipt"></i> {{ sale.INVOICE_NO }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let cart = [];
+
+        function addToCart() {
+            const input = document.getElementById('med-search-input');
+            const qtyInput = document.getElementById('sale-qty');
+            const datalist = document.getElementById('med-search-list');
+            const val = input.value;
+            
+            let selectedOption = null;
+            for (let i = 0; i < datalist.options.length; i++) {
+                if (datalist.options[i].value === val) {
+                    selectedOption = datalist.options[i];
+                    break;
+                }
+            }
+
+            if (!selectedOption) return alert("Please select a valid medicine from the list!");
+            
+            const item = {
+                id: selectedOption.getAttribute('data-id'),
+                name: val,
+                price: parseFloat(selectedOption.getAttribute('data-price')),
+                qty: parseInt(qtyInput.value),
+                stock: parseInt(selectedOption.getAttribute('data-stock'))
+            };
+
+            if (item.qty <= 0) return alert("Quantity must be at least 1");
+            if (item.qty > item.stock) return alert(`Insufficient stock! Available: ${item.stock}`);
+
+            // Check if already in cart
+            const existingIndex = cart.findIndex(c => c.id === item.id);
+            if (existingIndex > -1) {
+                cart[existingIndex].qty += item.qty;
+                if (cart[existingIndex].qty > item.stock) {
+                    cart[existingIndex].qty = item.stock;
+                    alert("Adjusted quantity to maximum available stock.");
+                }
+            } else {
+                cart.push(item);
+            }
+
+            updateCartUI();
+            
+            // Reset and focus
+            input.value = '';
+            qtyInput.value = 1;
+            input.focus();
+        }
+
+        function updateCartUI() {
+            const tbody = document.querySelector('#cart-table tbody');
+            tbody.innerHTML = '';
+            let total = 0;
+
+            cart.forEach((item, index) => {
+                const rowTotal = item.price * item.qty;
+                total += rowTotal;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${item.name}</strong></td>
+                        <td>₹${item.price}</td>
+                        <td>${item.qty}</td>
+                        <td>₹${rowTotal.toFixed(2)}</td>
+                        <td><button onclick="removeItem(${index})" style="color: #fa5252; border:none; background:none; cursor:pointer;"><i class="fa-solid fa-circle-xmark"></i></button></td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('grand-total').innerText = `₹${total.toFixed(2)}`;
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function checkout() {
+            const custName = document.getElementById('cust-name').value;
+            if (!custName) return alert("Enter customer name!");
+            if (cart.length === 0) return alert("Cart is empty!");
+
+            document.getElementById('hidden-cust-name').value = custName;
+            document.getElementById('hidden-cart-data').value = JSON.stringify(cart);
+            document.getElementById('final-checkout-form').submit();
+        }
+
+        const toggleBtn = document.getElementById('toggle-sidebar');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+    </script>
+</body>
+</html>

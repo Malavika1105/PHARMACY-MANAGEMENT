@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchases & Restock - MedCare Pro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/purchase.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .btn-back-aesthetic {
+            background: white;
+            border: 1px solid var(--glass-border);
+            padding: 8px 15px;
+            border-radius: 12px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .logout-full-btn {
+            background: #e03131;
+            color: white !important;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            font-weight: 700;
+            display: block;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+        .logout-full-btn:hover {
+            background: #c92a2a;
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+    <div class="dashboard-wrapper">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-house-medical"></i>
+                <div class="brand-logotype">
+                    <span class="med">Med</span><span class="care">Care</span><span class="pro-badge">Pro</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-item"><i class="fa-solid fa-chart-line"></i> Overview</a>
+                <a href="{{ url_for('medicine') }}" class="nav-item"><i class="fa-solid fa-pills"></i> Inventory</a>
+                <a href="{{ url_for('purchase') }}" class="nav-item active"><i class="fa-solid fa-cart-plus"></i> Purchases {% if low_stock_count > 0 %}<span class="sidebar-badge" style="background: #e03131;">{{ low_stock_count }}</span>{% endif %}</a>
+                <a href="{{ url_for('expiry') }}" class="nav-item"><i class="fa-solid fa-calendar-xmark"></i> Expiry Alerts {% if alert_count > 0 %}<span class="sidebar-badge">{{ alert_count }}</span>{% endif %}</a>
+                <a href="{{ url_for('billing') }}" class="nav-item"><i class="fa-solid fa-file-invoice-dollar"></i> Sales & Billing</a>
+                <a href="{{ url_for('supplier') }}" class="nav-item"><i class="fa-solid fa-users"></i> Suppliers</a>
+                <a href="{{ url_for('reports') }}" class="nav-item"><i class="fa-solid fa-chart-line"></i> Reports</a>
+                <a href="{{ url_for('settings') }}" class="nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
+                <a href="{{ url_for('contact') }}" class="nav-item"><i class="fa-solid fa-envelope"></i> Contact Us</a>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content" id="main-content">
+            <header class="top-bar">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="sidebar-toggle" id="toggle-sidebar">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn-back-aesthetic"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+                </div>
+                <div class="header-title">
+                    <h1>Purchases & Restock</h1>
+                    <p>Record new stock purchases and monitor low inventory</p>
+                </div>
+            </header>
+
+            <div class="container" style="padding: 20px;">
+                {% if low_stock_items %}
+                <div class="alert alert-warning" style="padding: 20px; margin-bottom: 30px; border-radius: 15px; background: #fffbeb; border: 1px solid #fcd34d; color: #92400e;">
+                    <h4 style="margin-bottom: 10px;"><i class="fa-solid fa-triangle-exclamation"></i> Low Stock Items Requiring Restock</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                        {% for item in low_stock_items %}
+                        <div style="background: white; padding: 10px 15px; border-radius: 10px; border: 1px solid #fde68a;">
+                            <strong style="display: block;">{{ item.MEDICINE_NAME }}</strong>
+                            <span style="font-size: 13px;">Current Stock: <span style="color: #dc2626; font-weight: 700;">{{ item.total_stock }}</span></span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ category }}" style="padding: 15px; margin-bottom: 20px; border-radius: 15px; background: {% if category=='success' %}#dcfce7; color: #15803d{% else %}#fee2e2; color: #b91c1c{% endif %}; font-weight: 600;">
+                        {{ message }}
+                      </div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+
+                <div class="table-container">
+                    <div class="table-header" style="padding: 25px; border-bottom: 1px solid rgba(165, 139, 139, 0.1);">
+                        <h3>Purchase History</h3>
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="purchaseSearch" placeholder="Search history..." onkeyup="searchTable()">
+                        </div>
+                    </div>
+                    <table class="modern-table" id="purchaseTable">
+                        <thead>
+                            <tr style="background: rgba(255,255,255,0.3);">
+                                <th style="padding: 18px 25px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--text-light);">Date</th>
+                                <th style="padding: 18px 25px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--text-light);">Medicine</th>
+                                <th style="padding: 18px 25px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--text-light);">Supplier</th>
+                                <th style="padding: 18px 25px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--text-light);">Quantity</th>
+                                <th style="padding: 18px 25px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--text-light);">Unit Cost</th>
+                                <th style="padding: 18px 25px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--text-light);">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in purchases %}
+                            <tr style="border-bottom: 1px solid rgba(165, 139, 139, 0.05);">
+                                <td style="padding: 20px 25px;">{{ p.purchase_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td style="padding: 20px 25px;"><strong>{{ p.MEDICINE_NAME }}</strong></td>
+                                <td style="padding: 20px 25px;">{{ p.supplier_name }}</td>
+                                <td style="padding: 20px 25px;">{{ p.quantity }}</td>
+                                <td style="padding: 20px 25px;">₹{{ p.unit_price }}</td>
+                                <td style="padding: 20px 25px;"><strong>₹{{ p.total_cost }}</strong></td>
+                            </tr>
+                            {% endfor %}
+                            {% if not purchases %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-light);">No purchase records found.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const toggleBtn = document.getElementById('toggle-sidebar');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+
+        function searchTable() {
+            let input = document.getElementById("purchaseSearch");
+            let filter = input.value.toUpperCase();
+            let table = document.getElementById("purchaseTable");
+            let tr = table.getElementsByTagName("tr");
+            for (let i = 1; i < tr.length; i++) {
+                let text = tr[i].textContent || tr[i].innerText;
+                if (text.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    </script>
+</body>
+</html>

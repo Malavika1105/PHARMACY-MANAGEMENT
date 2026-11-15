@@ -1,0 +1,121 @@
+/* Supplier Module Specific Styling */
+
+/* Override dashboard-wrapper for consistency if needed */
+.dashboard-body {
+    background: url("../image/bg2.png") no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* TABLE STYLING */
+.table-container {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(20px);
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 32px rgba(165, 139, 139, 0.1);
+    margin-top: 20px;
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-box i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--secondary);
+}
+
+.search-box input {
+    padding: 10px 15px 10px 45px;
+    border: 1px solid rgba(165, 139, 139, 0.2);
+    border-radius: 20px;
+    width: 300px;
+    font-size: 14px;
+    outline: none;
+    background: white;
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* MODAL STYLES - Unified with Inventory */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(45, 52, 54, 0.4);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal-card {
+    background: white;
+    width: 90%;
+    max-width: 550px;
+    border-radius: 30px;
+    padding: 35px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    align-items: center;
+}
+
+.close-btn {
+    background: #f1f2f6;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.modal-form label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-light);
+}
+
+.modal-form input, .modal-form textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #f1f2f6;
+    border-radius: 12px;
+    outline: none;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.modal-form input:focus {
+    border-color: var(--primary);
+}
+
+.btn-submit {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    padding: 15px;
+    border-radius: 30px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-submit:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory - MedCare Pro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/medicine.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .stock-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .stock-in { background: #dcfce7; color: #15803d; }
+        .stock-low { background: #fef9c3; color: #854d0e; }
+        .stock-out { background: #fee2e2; color: #b91c1c; }
+
+        .btn-back-aesthetic {
+            background: white;
+            border: 1px solid var(--glass-border);
+            padding: 8px 15px;
+            border-radius: 12px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .btn-back-aesthetic:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateX(-3px);
+        }
+        
+        .inventory-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .summary-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .supplier-status-bad {
+            color: #ef4444;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+    <div class="dashboard-wrapper">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-house-medical"></i>
+                <div class="brand-logotype">
+                    <span class="med">Med</span><span class="care">Care</span><span class="pro-badge">Pro</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-item"><i class="fa-solid fa-chart-line"></i> Overview</a>
+                <a href="{{ url_for('medicine') }}" class="nav-item active"><i class="fa-solid fa-pills"></i> Inventory</a>
+                <a href="{{ url_for('purchase') }}" class="nav-item"><i class="fa-solid fa-cart-plus"></i> Purchases {% if low_stock_count > 0 %}<span class="sidebar-badge" style="background: #e03131;">{{ low_stock_count }}</span>{% endif %}</a>
+                <a href="{{ url_for('expiry') }}" class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> Expiry List {% if alert_count > 0 %}<span class="sidebar-badge">{{ alert_count }}</span>{% endif %}</a>
+                <a href="{{ url_for('billing') }}" class="nav-item"><i class="fa-solid fa-file-invoice-dollar"></i> Sales & Billing</a>
+                <a href="{{ url_for('supplier') }}" class="nav-item"><i class="fa-solid fa-users"></i> Suppliers</a>
+                <a href="{{ url_for('reports') }}" class="nav-item"><i class="fa-solid fa-chart-line"></i> Reports</a>
+                <a href="{{ url_for('settings') }}" class="nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
+                <a href="{{ url_for('contact') }}" class="nav-item"><i class="fa-solid fa-envelope"></i> Contact Us</a>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content" id="main-content">
+            <header class="top-bar">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="sidebar-toggle" id="toggle-sidebar">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn-back-aesthetic"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+                </div>
+                <div class="header-title" style="margin-left: 20px;">
+                    <h1>Medicine Inventory</h1>
+                    <p>Manage batches and track total stock value</p>
+                </div>
+                <div class="header-actions" style="margin-left: auto;">
+                    <button class="btn-primary" onclick="document.getElementById('add-modal').style.display='flex'">
+                        <i class="fa-solid fa-plus"></i> Add New Batch/Item
+                    </button>
+                </div>
+            </header>
+
+            <div class="container" style="padding: 20px 0;">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ category }}" style="padding: 15px; margin-bottom: 20px; border-radius: 15px; background: {% if category=='success' %}#dcfce7; color: #15803d{% else %}#fee2e2; color: #b91c1c{% endif %}; font-weight: 600;">
+                        {{ message }}
+                      </div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+
+                <!-- Inventory Summary Cards -->
+                <div class="inventory-summary">
+                    <div class="summary-card">
+                        <div class="summary-icon" style="background: #eef2ff; color: #4f46e5;"><i class="fa-solid fa-box"></i></div>
+                        <div>
+                            <p style="color: #6b7280; font-size: 12px; margin: 0;">Total Records</p>
+                            <h3 style="margin: 0;">{{ medicines|length }}</h3>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon" style="background: #ecfdf5; color: #10b981;"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                        <div>
+                            <p style="color: #6b7280; font-size: 12px; margin: 0;">Total Inventory Value</p>
+                            <h3 style="margin: 0;">₹{% set total_val = namespace(value=0) %}{% for med in medicines %}{% set total_val.value = total_val.value + (med.PRICE|float * med.STOCK_QUANTITY|int) %}{% endfor %}{{ total_val.value|round(2) }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Current Stock by Batch</h3>
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="inventory-search" placeholder="Search name, ID or batch...">
+                        </div>
+                    </div>
+                    <table class="modern-table" id="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Medicine (ID)</th>
+                                <th>Batch No</th>
+                                <th>Category</th>
+                                <th>Expiry Date</th>
+                                <th>Price (Each)</th>
+                                <th>Stock</th>
+                                <th>Total Value</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for med in medicines %}
+                            {% set row_total = med.PRICE|float * med.STOCK_QUANTITY|int %}
+                            <tr>
+                                <td>
+                                    <strong>{{ med.MEDICINE_NAME }}</strong><br>
+                                    <small style="color: #9ca3af;">ID: {{ med.MEDICINE_ID }}</small>
+                                </td>
+                                <td><span class="batch-badge" style="background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 12px;">{{ med.BATCH_NO }}</span></td>
+                                <td><span class="category-tag">{{ med.CATEGORY }}</span></td>
+                                <td>{{ med.EXPIRY_DATE }}</td>
+                                <td>₹{{ med.PRICE }}</td>
+                                <td style="font-weight: 700;">{{ med.STOCK_QUANTITY }}</td>
+                                <td style="color: var(--secondary); font-weight: 700;">₹{{ "%.2f"|format(row_total) }}</td>
+                                <td>
+                                    {% if med.STOCK_QUANTITY > low_stock_threshold %}
+                                        <span class="stock-badge stock-in">In Stock</span>
+                                    {% elif med.STOCK_QUANTITY > 0 %}
+                                        <span class="stock-badge stock-low">Low Stock</span>
+                                    {% else %}
+                                        <span class="stock-badge stock-out">Out of Stock</span>
+                                    {% endif %}
+                                </td>
+                                <td class="actions-cell">
+                                    <button class="action-btn" style="color: #4f46e5;" onclick="openEditModal({{ med | tojson | forceescape }})"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <a href="{{ url_for('delete_medicine', id=med.id) }}" class="action-btn delete" onclick="return confirm('Delete this batch?')"><i class="fa-solid fa-trash-can"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ADD MODAL -->
+    <div id="add-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>New Inventory Entry</h2>
+                <button class="close-btn" onclick="document.getElementById('add-modal').style.display='none'">&times;</button>
+            </div>
+            <form action="{{ url_for('add_medicine') }}" method="POST" class="modal-form" id="add-med-form">
+                <div class="form-row">
+                    <div class="form-group" style="flex:1;">
+                        <label>Medicine Name</label>
+                        <input type="text" name="name" id="med-name-input" required autocomplete="off" onblur="fetchMedDetails(this.value);">
+                        <small style="color: #64748b;">ID and Category auto-fill if name exists</small>
+                    </div>
+                    <div class="form-group" style="width: 140px;">
+                        <label>Medicine ID</label>
+                        <input type="text" id="med-id-input" placeholder="Auto-assign" readonly style="background: #f3f4f6; cursor: not-allowed;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Supplier Name</label>
+                    <select name="supplier_name" id="med-supplier-select" onchange="validateSupplier('add')" style="width: 100%; padding: 12px 15px; border: 2px solid var(--bg-main); border-radius: 12px;">
+                        <option value="" data-medicines="">Select a Supplier</option>
+                        {% for supplier in suppliers %}
+                        <option value="{{ supplier.supplier_name }}" data-medicines="{{ supplier.medicines_supplied }}">{{ supplier.supplier_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div id="add-supplier-error" class="supplier-status-bad"><i class="fa-solid fa-circle-exclamation"></i> This supplier is not listed for this medicine!</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex:1;">
+                        <label>Batch No</label>
+                        <input type="text" name="batch" placeholder="e.g. B-102" required>
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Category</label>
+                        <input type="text" name="category" id="med-cat-input" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex:1;">
+                        <label>Purchase Price (₹)</label>
+                        <input type="number" step="0.01" name="purchase_price" id="med-purprice-input" required>
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Selling Price (₹)</label>
+                        <input type="number" step="0.01" name="price" id="med-price-input" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex:1;">
+                        <label>Purchase Date</label>
+                        <input type="date" name="purchase_date" required>
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Expiry Date</label>
+                        <input type="date" name="expiry" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex:1;">
+                        <label>Stock Quantity</label>
+                        <input type="number" name="stock" required>
+                    </div>
+                    <div style="flex:1;"></div>
+                </div>
+                <button type="submit" class="btn-submit">Add to Inventory</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div id="edit-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Edit Batch Details</h2>
+                <button class="close-btn" onclick="document.getElementById('edit-modal').style.display='none'">&times;</button>
+            </div>
+            <form id="edit-form" method="POST" class="modal-form">
+                <div class="form-row">
+                    <div class="form-group" style="flex:1;">
+                        <label>Medicine Name</label>
+                        <input type="text" name="name" id="edit-name" required>
+                    </div>
+                    <div class="form-group" style="width: 140px;">
+                        <label>Medicine ID</label>
+                        <input type="text" name="id" id="edit-id" readonly style="background: #f3f4f6; cursor: not-allowed;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Supplier Name</label>
+                    <select name="supplier_name" id="edit-supplier" onchange="validateSupplier('edit')" style="width: 100%; padding: 12px 15px; border: 2px solid var(--bg-main); border-radius: 12px;">
+                        <option value="" data-medicines="">Select a Supplier</option>
+                        {% for supplier in suppliers %}
+                        <option value="{{ supplier.supplier_name }}" data-medicines="{{ supplier.medicines_supplied }}">{{ supplier.supplier_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div id="edit-supplier-error" class="supplier-status-bad"><i class="fa-solid fa-circle-exclamation"></i> This supplier is not listed for this medicine!</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex:1;">
+                        <label>Batch No</label>
+                        <input type="text" name="batch" id="edit-batch" required>
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Category</label>
+                        <input type="text" name="category" id="edit-category" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex:1;">
+                        <label>Purchase Price (₹)</label>
+                        <input type="number" step="0.01" name="purchase_price" id="edit-purchase-price" required>
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Selling Price (₹)</label>
+                        <input type="number" step="0.01" name="price" id="edit-price" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex:1;">
+                        <label>Purchase Date</label>
+                        <input type="date" name="purchase_date" id="edit-purdate" required>
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Expiry Date</label>
+                        <input type="date" name="expiry" id="edit-expiry" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex:1;">
+                        <label>Stock Quantity</label>
+                        <input type="number" name="stock" id="edit-stock" required>
+                    </div>
+                    <div style="flex:1;"></div>
+                </div>
+                <button type="submit" class="btn-submit">Update Details</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const toggleBtn = document.getElementById('toggle-sidebar');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+
+        // Fetch Medicine Details for auto-fill
+        function fetchMedDetails(name) {
+            if (!name) return;
+            fetch(`/get_medicine_details/${encodeURIComponent(name)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data) {
+                        document.getElementById('med-id-input').value = data.MEDICINE_ID || "";
+                        if (!data.is_new) {
+                            document.getElementById('med-cat-input').value = data.CATEGORY || "";
+                            document.getElementById('med-price-input').value = data.PRICE || "";
+                            document.getElementById('med-purprice-input').value = data.PURCHASE_PRICE || "";
+                        }
+                    }
+                });
+        }
+
+        // Table Search/Filter Logic
+        const inventorySearch = document.getElementById('inventory-search');
+        const inventoryTable = document.getElementById('inventory-table').getElementsByTagName('tbody')[0];
+
+        inventorySearch.addEventListener('keyup', function() {
+            const filter = this.value.toLowerCase();
+            const rows = inventoryTable.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const text = rows[i].textContent.toLowerCase();
+                if (text.includes(filter)) {
+                    rows[i].style.display = "";
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+        });
+
+        function validateSupplier(type) {
+            const nameInput = document.getElementById(type === 'add' ? 'med-name-input' : 'edit-name');
+            const supplierSelect = document.getElementById(type === 'add' ? 'med-supplier-select' : 'edit-supplier');
+            const errorDiv = document.getElementById(type === 'add' ? 'add-supplier-error' : 'edit-supplier-error');
+            
+            const medName = nameInput.value.trim().toLowerCase();
+            const selectedOption = supplierSelect.options[supplierSelect.selectedIndex];
+            const medicinesSupplied = (selectedOption.getAttribute('data-medicines') || "").toLowerCase();
+
+            if (medName && selectedOption.value && medicinesSupplied) {
+                // Check if medicine name exists in the comma-separated or space-separated list
+                const medsList = medicinesSupplied.split(/[,; ]+/).map(m => m.trim().toLowerCase());
+                const isValid = medsList.some(m => m === medName || medName.includes(m) || m.includes(medName));
+                
+                errorDiv.style.display = isValid ? 'none' : 'block';
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        // Add listeners for name inputs to re-validate when typing
+        document.getElementById('med-name-input').addEventListener('input', () => validateSupplier('add'));
+        document.getElementById('edit-name').addEventListener('input', () => validateSupplier('edit'));
+
+        function openEditModal(med) {
+            document.getElementById('edit-form').action = "/update_medicine/" + med.id;
+            document.getElementById('edit-name').value = med.MEDICINE_NAME;
+            document.getElementById('edit-id').value = med.MEDICINE_ID;
+            document.getElementById('edit-supplier').value = med.SUPPLIER_NAME || "";
+            document.getElementById('edit-batch').value = med.BATCH_NO;
+            document.getElementById('edit-category').value = med.CATEGORY;
+            document.getElementById('edit-purchase-price').value = med.PURCHASE_PRICE;
+            document.getElementById('edit-price').value = med.PRICE;
+            document.getElementById('edit-stock').value = med.STOCK_QUANTITY;
+            
+            // Format dates for input[type=date]
+            if(med.EXPIRY_DATE) document.getElementById('edit-expiry').value = med.EXPIRY_DATE;
+            if(med.PURCHASE_DATE) document.getElementById('edit-purdate').value = med.PURCHASE_DATE;
+            
+            document.getElementById('edit-modal').style.display = 'flex';
+            // Trigger validation when opening edit modal
+            validateSupplier('edit');
+        }
+    </script>
+</body>
+</html>
