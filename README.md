@@ -98,17 +98,34 @@ The app reads all settings from environment variables:
 | `DB_NAME` | `LOGIN_1` | Database name |
 | `SECRET_KEY` | _(random per start)_ | Flask session key; always set this in production |
 
-## Free Deployment (PythonAnywhere)
+## Free Deployment (TiDB Cloud + Render)
 
-The free tier of PythonAnywhere includes a MySQL database, so the app can run there with no paid plan:
+The app is deployed for free with TiDB Cloud Starter (free MySQL-compatible database) and Render (free web service). Neither requires a card. Live example: the maintainer's instance runs at a `*.onrender.com` URL.
+
+### 1. Database: TiDB Cloud Starter
+
+1. Sign up at tidbcloud.com and create a **Starter** cluster (free: 5 GiB storage + 50M RU/month; set the spending limit to $0).
+2. On the cluster's Connect dialog, note the host, port `4000`, and username, and set/reset the password.
+3. Create the database and load the schema (requires a MySQL client and TLS):
+
+   ```bash
+   mysql -h <HOST> -P 4000 -u <USER> -p --ssl-ca=/etc/ssl/certs/ca-certificates.crt -e "CREATE DATABASE IF NOT EXISTS LOGIN_1;"
+   mysql -h <HOST> -P 4000 -u <USER> -p --ssl-ca=/etc/ssl/certs/ca-certificates.crt LOGIN_1 < schema.sql
+   ```
+
+### 2. Web app: Render
 
 1. Push this repository to GitHub.
-2. Create a free account at pythonanywhere.com and open a Bash console.
-3. `git clone <this repo URL>` and `pip install --user -r PHARMACY-MANAGEMENT/requirements.txt`.
-4. On the Databases tab, set a MySQL password and create a database named `LOGIN_1` (PythonAnywhere names it `<username>$LOGIN_1`).
-5. Open the MySQL console from the Databases tab and run the table and view definitions from `schema.sql` (skip the `CREATE DATABASE` and `USE` lines).
-6. On the Web tab, add a new Flask web app pointing at the cloned project. Put the environment variables above (`DB_HOST` is `<username>.mysql.pythonanywhere-services.com`, `DB_USER` and `DB_NAME` use the `<username>$LOGIN_1` form, plus `DB_PASSWORD` and `SECRET_KEY`) into `~/.pharm_env` with `chmod 600`, then replace the generated WSGI file with `pythonanywhere_wsgi.py` from this repo (change `USERNAME` in it to your PythonAnywhere username).
-7. Reload the web app. The site is live at `https://<username>.pythonanywhere.com`.
+2. At dashboard.render.com, choose **New > Web Service** and connect the repo.
+3. Settings: Runtime `Python 3`, Build Command `pip install -r requirements.txt`, Start Command `gunicorn app:app`, Instance Type **Free ($0/month)**.
+4. Add these environment variables (Environment tab):
+   - `DB_HOST` = the TiDB host, `DB_PORT` = `4000`, `DB_USER`, `DB_PASSWORD` = the TiDB credentials
+   - `DB_NAME` = `LOGIN_1`
+   - `DB_SSL_CA` = `/etc/ssl/certs/ca-certificates.crt`
+   - `SECRET_KEY` = any long random string (`python3 -c "import secrets; print(secrets.token_hex(32))"`)
+5. Click **Deploy web service**. Render gives you a public `https://<name>.onrender.com` URL (a suffix may be added if the name is taken).
+
+After that, every `git push` to the connected branch redeploys automatically. The free web service sleeps after ~15 minutes without traffic; the first request after a sleep can take up to a minute.
 
 ## Testing
 
