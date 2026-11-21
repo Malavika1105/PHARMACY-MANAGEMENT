@@ -7,8 +7,20 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = "pharmacy_secret_key"
-UPLOAD_FOLDER = 'static/uploads/profile_pics'
+# SECRET_KEY should be set in the environment in production.
+# The random fallback keeps local development working but logs everyone out on restart.
+app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
+
+# Hosted MySQL-compatible databases (e.g. TiDB Cloud) require TLS. If no CA
+# bundle was configured through the environment, fall back to common system
+# locations so hosted runtimes (Render, Vercel, ...) work out of the box.
+if not os.environ.get("DB_SSL_CA"):
+    for _ca_candidate in ("/etc/ssl/certs/ca-certificates.crt", "/etc/pki/tls/certs/ca-bundle.crt"):
+        if os.path.exists(_ca_candidate):
+            os.environ["DB_SSL_CA"] = _ca_candidate
+            break
+
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads', 'profile_pics')
 # Ensure the upload folder exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -18,12 +30,27 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 LOW_STOCK_THRESHOLD = 10
 
 def get_db_connection():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="1105",
-        database="LOGIN_1"
+    # Database settings come from environment variables so no credentials live in code.
+    # Defaults match a local MySQL setup; set DB_HOST, DB_PORT, DB_USER, DB_PASSWORD
+    # and DB_NAME for any hosted deployment.
+    args = dict(
+        host=os.environ.get("DB_HOST", "localhost"),
+        port=int(os.environ.get("DB_PORT", "3306")),
+        user=os.environ.get("DB_USER", "root"),
+        password=os.environ.get("DB_PASSWORD", ""),
+        database=os.environ.get("DB_NAME", "LOGIN_1"),
+        connection_timeout=int(os.environ.get("DB_CONNECT_TIMEOUT", "10")),
     )
+    # Hosted MySQL-compatible databases (e.g. TiDB Cloud) usually require TLS.
+    # Point DB_SSL_CA at a CA bundle, e.g. /etc/ssl/certs/ca-certificates.crt on Linux.
+    if os.environ.get("DB_SSL_CA"):
+        args["ssl_ca"] = os.environ["DB_SSL_CA"]
+        args["ssl_verify_cert"] = os.environ.get("DB_SSL_VERIFY", "1") == "1"
+    # The pure-Python connector avoids missing-plugin errors (mysql_native_password)
+    # that the C extension hits against some hosted MySQL-compatible databases.
+    if os.environ.get("DB_USE_PURE", "1") == "1":
+        args["use_pure"] = True
+    return mysql.connector.connect(**args)
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -668,4 +695,4 @@ def logout():
     return redirect(url_for("login"))
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "5000")), debug=os.environ.get("FLASK_DEBUG") == "1")

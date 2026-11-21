@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Flask instance folder (local configs and the SQLite database)
+instance/
+
+# Uploaded profile pictures are user data, not source code
+static/uploads/profile_pics/
+
+# Environment and editor files
+.env
+.vscode/
+.idea/
+.DS_Store
