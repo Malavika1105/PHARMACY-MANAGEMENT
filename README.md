@@ -2,6 +2,8 @@
 
 A web-based Pharmacy Management System developed using Python Flask and MySQL to manage pharmacy-related operations through a simple and user-friendly interface.
 
+**Live demo:** https://pharmacy-management-gray.vercel.app (deployed free on Vercel with a TiDB Cloud database; first visit after idle may take a few seconds while the function cold-starts).
+
 ## Overview
 
 The Pharmacy Management System is designed to simplify pharmacy management by providing a web-based platform backed by a MySQL database.
@@ -100,7 +102,7 @@ The app reads all settings from environment variables:
 
 ## Free Deployment (TiDB Cloud + Vercel)
 
-The app is deployed for free with TiDB Cloud Starter (free MySQL-compatible database) and Vercel (free Hobby plan, serverless Python). Neither requires a card. Live example: the maintainer's instance runs at a `*.vercel.app` URL.
+The app is deployed for free with TiDB Cloud Starter (free MySQL-compatible database) and Vercel (free Hobby plan, serverless Python). Neither requires a card. Live example: https://pharmacy-management-gray.vercel.app
 
 ### 1. Database: TiDB Cloud Starter
 
