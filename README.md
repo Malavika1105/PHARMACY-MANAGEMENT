@@ -107,7 +107,7 @@ The free tier of PythonAnywhere includes a MySQL database, so the app can run th
 3. `git clone <this repo URL>` and `pip install --user -r PHARMACY-MANAGEMENT/requirements.txt`.
 4. On the Databases tab, set a MySQL password and create a database named `LOGIN_1` (PythonAnywhere names it `<username>$LOGIN_1`).
 5. Open the MySQL console from the Databases tab and run the table and view definitions from `schema.sql` (skip the `CREATE DATABASE` and `USE` lines).
-6. On the Web tab, add a new Flask web app pointing at the cloned project, then edit the WSGI file to set the environment variables above (`DB_HOST` is `<username>.mysql.pythonanywhere-services.com`, `DB_USER` and `DB_NAME` use the `<username>$LOGIN_1` form, plus `DB_PASSWORD` and `SECRET_KEY`) and import the Flask app as `application`.
+6. On the Web tab, add a new Flask web app pointing at the cloned project. Put the environment variables above (`DB_HOST` is `<username>.mysql.pythonanywhere-services.com`, `DB_USER` and `DB_NAME` use the `<username>$LOGIN_1` form, plus `DB_PASSWORD` and `SECRET_KEY`) into `~/.pharm_env` with `chmod 600`, then replace the generated WSGI file with `pythonanywhere_wsgi.py` from this repo (change `USERNAME` in it to your PythonAnywhere username).
 7. Reload the web app. The site is live at `https://<username>.pythonanywhere.com`.
 
 ## Testing

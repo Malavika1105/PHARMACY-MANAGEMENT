@@ -10,7 +10,7 @@ app = Flask(__name__)
 # SECRET_KEY should be set in the environment in production.
 # The random fallback keeps local development working but logs everyone out on restart.
 app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
-UPLOAD_FOLDER = 'static/uploads/profile_pics'
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads', 'profile_pics')
 # Ensure the upload folder exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
