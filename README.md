@@ -98,9 +98,9 @@ The app reads all settings from environment variables:
 | `DB_NAME` | `LOGIN_1` | Database name |
 | `SECRET_KEY` | _(random per start)_ | Flask session key; always set this in production |
 
-## Free Deployment (TiDB Cloud + Render)
+## Free Deployment (TiDB Cloud + Vercel)
 
-The app is deployed for free with TiDB Cloud Starter (free MySQL-compatible database) and Render (free web service). Neither requires a card. Live example: the maintainer's instance runs at a `*.onrender.com` URL.
+The app is deployed for free with TiDB Cloud Starter (free MySQL-compatible database) and Vercel (free Hobby plan, serverless Python). Neither requires a card. Live example: the maintainer's instance runs at a `*.vercel.app` URL.
 
 ### 1. Database: TiDB Cloud Starter
 
@@ -113,19 +113,22 @@ The app is deployed for free with TiDB Cloud Starter (free MySQL-compatible data
    mysql -h <HOST> -P 4000 -u <USER> -p --ssl-ca=/etc/ssl/certs/ca-certificates.crt LOGIN_1 < schema.sql
    ```
 
-### 2. Web app: Render
+### 2. Web app: Vercel
 
 1. Push this repository to GitHub.
-2. At dashboard.render.com, choose **New > Web Service** and connect the repo.
-3. Settings: Runtime `Python 3`, Build Command `pip install -r requirements.txt`, Start Command `gunicorn app:app`, Instance Type **Free ($0/month)**.
-4. Add these environment variables (Environment tab):
+2. At vercel.com/new, import the repository. Vercel detects the Flask app in `app.py` automatically and installs `requirements.txt`; no build or output settings are needed.
+3. Add these environment variables (Settings > Environment Variables, for Production and Preview):
    - `DB_HOST` = the TiDB host, `DB_PORT` = `4000`, `DB_USER`, `DB_PASSWORD` = the TiDB credentials
    - `DB_NAME` = `LOGIN_1`
-   - `DB_SSL_CA` = `/etc/ssl/certs/ca-certificates.crt`
    - `SECRET_KEY` = any long random string (`python3 -c "import secrets; print(secrets.token_hex(32))"`)
-5. Click **Deploy web service**. Render gives you a public `https://<name>.onrender.com` URL (a suffix may be added if the name is taken).
+   - `DB_SSL_CA` is optional: the code auto-detects the system CA bundle on Linux hosts.
+4. Click **Deploy**. Vercel gives you a public `https://<name>.vercel.app` URL.
 
-After that, every `git push` to the connected branch redeploys automatically. The free web service sleeps after ~15 minutes without traffic; the first request after a sleep can take up to a minute.
+After that, every `git push` to the connected branch redeploys automatically. Two differences from classic hosting: requests run as serverless functions (a cold start can take a few seconds), and uploaded profile pictures do not persist because the serverless filesystem is temporary.
+
+### Alternative: Render
+
+Render (free web service, no card) also works: Runtime `Python 3`, Build Command `pip install -r requirements.txt`, Start Command `gunicorn app:app`, Instance Type **Free ($0/month)**, with the same environment variables plus `DB_SSL_CA=/etc/ssl/certs/ca-certificates.crt`. The free service sleeps after ~15 minutes without traffic; the first request after a sleep can take up to a minute.
 
 ## Testing
 

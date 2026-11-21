@@ -10,6 +10,16 @@ app = Flask(__name__)
 # SECRET_KEY should be set in the environment in production.
 # The random fallback keeps local development working but logs everyone out on restart.
 app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
+
+# Hosted MySQL-compatible databases (e.g. TiDB Cloud) require TLS. If no CA
+# bundle was configured through the environment, fall back to common system
+# locations so hosted runtimes (Render, Vercel, ...) work out of the box.
+if not os.environ.get("DB_SSL_CA"):
+    for _ca_candidate in ("/etc/ssl/certs/ca-certificates.crt", "/etc/pki/tls/certs/ca-bundle.crt"):
+        if os.path.exists(_ca_candidate):
+            os.environ["DB_SSL_CA"] = _ca_candidate
+            break
+
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads', 'profile_pics')
 # Ensure the upload folder exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
