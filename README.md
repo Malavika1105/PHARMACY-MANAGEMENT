@@ -128,10 +128,6 @@ The app is deployed for free with TiDB Cloud Starter (free MySQL-compatible data
 
 After that, every `git push` to the connected branch redeploys automatically. Two differences from classic hosting: requests run as serverless functions (a cold start can take a few seconds), and uploaded profile pictures do not persist because the serverless filesystem is temporary.
 
-### Alternative: Render
-
-Render (free web service, no card) also works: Runtime `Python 3`, Build Command `pip install -r requirements.txt`, Start Command `gunicorn app:app`, Instance Type **Free ($0/month)**, with the same environment variables plus `DB_SSL_CA=/etc/ssl/certs/ca-certificates.crt`. The free service sleeps after ~15 minutes without traffic; the first request after a sleep can take up to a minute.
-
 ## Testing
 
 The project includes a Python testing file:
@@ -140,9 +136,13 @@ The project includes a Python testing file:
 test_id_logic.py
 ```
 
-## Author
+## Authors
 
-**Malavika Sunooj**
+- **Laya Khathoon**
+- **Muhammed Farzee**
+- **Zeeshan Abdullah**
+- **Mariyambi Musthafa**
+- **Malavika Sunooj**
 
 B.Tech Computer Science and Engineering
 
