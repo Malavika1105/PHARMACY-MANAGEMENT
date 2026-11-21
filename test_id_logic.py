@@ -1,12 +1,14 @@
+import os
 import mysql.connector
 
 def test_id_logic():
     try:
         db = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="1105",
-            database="login_1"
+            host=os.environ.get("DB_HOST", "localhost"),
+            port=int(os.environ.get("DB_PORT", "3306")),
+            user=os.environ.get("DB_USER", "root"),
+            password=os.environ.get("DB_PASSWORD", ""),
+            database=os.environ.get("DB_NAME", "LOGIN_1")
         )
         cursor = db.cursor(dictionary=True)
         

@@ -7,7 +7,9 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = "pharmacy_secret_key"
+# SECRET_KEY should be set in the environment in production.
+# The random fallback keeps local development working but logs everyone out on restart.
+app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
 UPLOAD_FOLDER = 'static/uploads/profile_pics'
 # Ensure the upload folder exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -18,11 +20,16 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 LOW_STOCK_THRESHOLD = 10
 
 def get_db_connection():
+    # Database settings come from environment variables so no credentials live in code.
+    # Defaults match a local MySQL setup; set DB_HOST, DB_PORT, DB_USER, DB_PASSWORD
+    # and DB_NAME for any hosted deployment.
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="1105",
-        database="LOGIN_1"
+        host=os.environ.get("DB_HOST", "localhost"),
+        port=int(os.environ.get("DB_PORT", "3306")),
+        user=os.environ.get("DB_USER", "root"),
+        password=os.environ.get("DB_PASSWORD", ""),
+        database=os.environ.get("DB_NAME", "LOGIN_1"),
+        connection_timeout=int(os.environ.get("DB_CONNECT_TIMEOUT", "10")),
     )
 
 def allowed_file(filename):
@@ -668,4 +675,4 @@ def logout():
     return redirect(url_for("login"))
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "5000")), debug=os.environ.get("FLASK_DEBUG") == "1")
