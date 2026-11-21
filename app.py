@@ -23,7 +23,7 @@ def get_db_connection():
     # Database settings come from environment variables so no credentials live in code.
     # Defaults match a local MySQL setup; set DB_HOST, DB_PORT, DB_USER, DB_PASSWORD
     # and DB_NAME for any hosted deployment.
-    return mysql.connector.connect(
+    args = dict(
         host=os.environ.get("DB_HOST", "localhost"),
         port=int(os.environ.get("DB_PORT", "3306")),
         user=os.environ.get("DB_USER", "root"),
@@ -31,6 +31,16 @@ def get_db_connection():
         database=os.environ.get("DB_NAME", "LOGIN_1"),
         connection_timeout=int(os.environ.get("DB_CONNECT_TIMEOUT", "10")),
     )
+    # Hosted MySQL-compatible databases (e.g. TiDB Cloud) usually require TLS.
+    # Point DB_SSL_CA at a CA bundle, e.g. /etc/ssl/certs/ca-certificates.crt on Linux.
+    if os.environ.get("DB_SSL_CA"):
+        args["ssl_ca"] = os.environ["DB_SSL_CA"]
+        args["ssl_verify_cert"] = os.environ.get("DB_SSL_VERIFY", "1") == "1"
+    # The pure-Python connector avoids missing-plugin errors (mysql_native_password)
+    # that the C extension hits against some hosted MySQL-compatible databases.
+    if os.environ.get("DB_USE_PURE", "1") == "1":
+        args["use_pure"] = True
+    return mysql.connector.connect(**args)
 
 def allowed_file(filename):
     return '.' in filename and \
